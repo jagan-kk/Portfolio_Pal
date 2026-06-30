@@ -1,0 +1,15 @@
+{
+  "name": "portfolio-pal",
+  "private": true,
+  "scripts": {
+    "dev:frontend": "npm -w frontend run dev",
+    "dev:backend": "npm -w backend run dev",
+    "build": "npm -w frontend run build",
+    "lint": "npm -w frontend run lint",
+    "format": "npm -w frontend run format"
+  },
+  "workspaces": [
+    "frontend",
+    "backend"
+  ]
+}
