@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: portfolio-pal-backend
+    env: node
+    region: oregon
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npx tsx src/server.ts
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: PAGE_INDEX_KEY
+        sync: false
