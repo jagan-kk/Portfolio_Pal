@@ -38,7 +38,7 @@ export class VectorlessRAG {
   constructor(
     private pageClient: PageIndexClient,
     private groqKey: string,
-    private model: string = "groq:openai/gpt-oss-20b",
+    private model: string = "openai/gpt-oss-20b",
     private systemPrompt: string = SYSTEM_PROMPT,
   ) {
     this.groqApiKey = groqKey;
