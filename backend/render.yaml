@@ -12,3 +12,5 @@ services:
         sync: false
       - key: PAGE_INDEX_KEY
         sync: false
+      - key: PDF_URL
+        sync: false

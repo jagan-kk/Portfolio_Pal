@@ -1,6 +1,7 @@
 import "dotenv/config";
 import "./lib/error-capture";
 import { createServer } from "http";
+import { writeFileSync } from "fs";
 import { PageIndexClient } from "@pageindex/sdk";
 import { VectorlessRAG, type TreeNode } from "./rag";
 import { consumeLastCapturedError } from "./lib/error-capture";
@@ -19,8 +20,24 @@ const rag = new VectorlessRAG(pageClient, GROQ_API_KEY);
 
 let documentTree: TreeNode[] = [];
 
+async function getPdfPath(): Promise<string> {
+  const pdfUrl = process.env.PDF_URL;
+  if (pdfUrl) {
+    console.log(`INFO: Downloading PDF from ${pdfUrl}...`);
+    const res = await fetch(pdfUrl);
+    if (!res.ok) throw new Error(`Failed to download PDF: ${res.status} ${res.statusText}`);
+    const buffer = Buffer.from(await res.arrayBuffer());
+    const tmpPath = "/tmp/resume.pdf";
+    writeFileSync(tmpPath, buffer);
+    console.log("INFO: PDF downloaded to", tmpPath);
+    return tmpPath;
+  }
+  return "jags.pdf";
+}
+
 console.log("INFO: Processing resume PDF and building tree index...");
-rag.processDocument("jags.pdf")
+getPdfPath()
+  .then((pdfPath) => rag.processDocument(pdfPath))
   .then((tree) => {
     documentTree = tree;
     console.log("INFO: Document tree loaded. Ready for queries.");
