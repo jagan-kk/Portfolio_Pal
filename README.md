@@ -3,7 +3,7 @@
 AI-powered portfolio assistant. Chat with a RAG-backed assistant that answers questions about Jagan K K's projects, skills, and education from the resume PDF.
 
 ## Live
-https://portfolio-fkttx5bs6-jagan-kks-projects.vercel.app/ 
+https://portfolio-pal-pied.vercel.app/
 
 ## Tech Stack
 
