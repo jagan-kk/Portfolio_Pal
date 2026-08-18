@@ -120,23 +120,28 @@ Reply strictly in this json format:
     });
 
     if (!response.ok) {
-      console.error("GROQ tree search error:", await response.text());
-      return { thinking: "API error", node_list: [] };
+      const errText = await response.text();
+      console.error(`GROQ tree search error (${response.status}):`, errText);
+      return { thinking: `API error: ${response.status}`, node_list: [] };
     }
 
     const data = await response.json() as { choices?: { message?: { content?: string } }[] };
     const rawContent = data.choices?.[0]?.message?.content ?? "";
     const cleanJson = rawContent.replace(/^```json\s*|\s*```$/gm, "").trim();
     try {
-      return JSON.parse(cleanJson);
+      const parsed = JSON.parse(cleanJson) as { thinking?: string; node_list?: unknown };
+      const nodeList = Array.isArray(parsed.node_list) ? parsed.node_list.filter((n): n is string => typeof n === "string") : [];
+      console.log(`GROQ tree search: ${nodeList.length} node(s) selected. thinking=${JSON.stringify(parsed.thinking)}`);
+      return { thinking: parsed.thinking ?? "", node_list: nodeList };
     } catch {
+      console.error("GROQ tree search: failed to parse LLM response. Raw:", rawContent);
       return { thinking: "Failed to parse LLM response", node_list: [] };
     }
   }
 
   async *generateAnswer(query: string, relevantNodes: string[], tree: TreeNode[]): AsyncGenerator<string> {
     const relevantTreeNodes = this.findNodesById(relevantNodes, tree);
-    const context = relevantTreeNodes.length > 0 ? relevantTreeNodes : this.compressTree(tree).slice(0, 3);
+    const context = relevantTreeNodes.length > 0 ? relevantTreeNodes : tree;
 
     const userContent = `Query: ${query}
 
