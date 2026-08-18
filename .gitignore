@@ -20,6 +20,9 @@ dist-ssr
 .env
 .env.*.local
 
+# Backend document tree cache
+.cache/
+
 # Frontend build
 frontend/dist
 

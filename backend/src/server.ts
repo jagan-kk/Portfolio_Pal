@@ -2,8 +2,10 @@ import "dotenv/config";
 import "./lib/error-capture";
 import { createServer } from "http";
 import { writeFileSync } from "fs";
+import { join } from "path";
 import { PageIndexClient } from "@pageindex/sdk";
 import { VectorlessRAG, type TreeNode } from "./rag";
+import { hashFile, loadTreeCache, saveTreeCache } from "./lib/tree-cache";
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 
@@ -14,6 +16,8 @@ if (!GROQ_API_KEY || !PAGE_INDEX_KEY) {
   console.error("Missing GROQ_API_KEY or PAGE_INDEX_KEY in .env");
   process.exit(1);
 }
+
+const TREE_CACHE_PATH = process.env.TREE_CACHE_PATH || join(process.cwd(), ".cache", "document-tree.json");
 
 const pageClient = new PageIndexClient({ apiKey: PAGE_INDEX_KEY });
 const rag = new VectorlessRAG(pageClient, GROQ_API_KEY);
@@ -35,9 +39,25 @@ async function getPdfPath(): Promise<string> {
   return "jags.pdf";
 }
 
+async function buildDocumentTree(pdfPath: string): Promise<TreeNode[]> {
+  const pdfHash = hashFile(pdfPath);
+  const cached = loadTreeCache(TREE_CACHE_PATH);
+
+  if (cached && cached.hash === pdfHash && Array.isArray(cached.tree)) {
+    console.log("INFO: Reusing cached document tree (PDF unchanged).");
+    return cached.tree;
+  }
+
+  console.log("INFO: PDF changed or no cache — processing document via PageIndex...");
+  const tree = await rag.processDocument(pdfPath);
+  saveTreeCache(TREE_CACHE_PATH, { hash: pdfHash, tree });
+  console.log("INFO: Document tree cached to", TREE_CACHE_PATH);
+  return tree;
+}
+
 console.log("INFO: Processing resume PDF and building tree index...");
 getPdfPath()
-  .then((pdfPath) => rag.processDocument(pdfPath))
+  .then(buildDocumentTree)
   .then((tree) => {
     documentTree = tree;
     console.log("INFO: Document tree loaded. Ready for queries.");

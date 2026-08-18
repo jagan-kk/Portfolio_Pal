@@ -1,4 +1,5 @@
 import { readFileSync } from "fs";
+import { createHash } from "crypto";
 import { PageIndexClient } from "@pageindex/sdk";
 
 export interface TreeNode {
