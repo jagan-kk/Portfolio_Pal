@@ -4,7 +4,8 @@ AI-powered portfolio assistant. Chat with a RAG-backed assistant that answers qu
 
 ## Live
 https://portfolio-pal-pied.vercel.app/
-https://portfolio01-lyart-two.vercel.app/
+
+https://portfolio-hz7u.vercel.app/
 
 ## Tech Stack
 
